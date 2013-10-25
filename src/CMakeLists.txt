@@ -1,4 +1,5 @@
 rock_library(projection
+    DEPS_PKGCONFIG opencv eigen3
     SOURCES Dummy.cpp
     HEADERS Dummy.hpp)
 

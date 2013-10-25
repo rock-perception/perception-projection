@@ -1,3 +1,3 @@
 rock_testsuite(test suite.cpp
-   test_Dummy.cpp
+   test_Projection.cpp
    DEPS projection)
