@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE( image_projection )
 
     Eigen::Isometry3f camA2plane = 
         Eigen::Isometry3f( Eigen::Translation3f( Eigen::Vector3f( 0, 0, -1 ) ) ) *
+        Eigen::AngleAxisf( M_PI*0.1, Eigen::Vector3f::UnitZ() ) * 
         Eigen::AngleAxisf( M_PI*0.435, Eigen::Vector3f::UnitX() ) * 
         Eigen::AngleAxisf( M_PI, Eigen::Vector3f::UnitX() ) ;
 
@@ -78,12 +79,18 @@ BOOST_AUTO_TEST_CASE( image_projection )
     Eigen::Matrix3f cam1 = getCameraMatrix( 350, 350, src.cols / 2, src.rows / 2 );
     Eigen::Matrix3f H = calcHomography( camA2plane, camB2plane ); 
 
-    Eigen::Matrix3f hom = cam1 * H.inverse() * cam1.inverse();
+    Eigen::Matrix3f hom = cam1 * H * cam1.inverse();
+
     eigen2cv( hom, hom_cv );
 
     // apply perspective Transform
-    cv::warpPerspective( src, dst, hom_cv, dst.size(), cv::INTER_LINEAR  ); 
+    cv::warpPerspective( src, dst, hom_cv, dst.size(), cv::WARP_INVERSE_MAP | cv::INTER_LINEAR ); 
     
+    // draw line at infinity
+    cv::Point p1( .0f, (.0f * hom(2,0) - hom(2,2)) / hom(2,1) );
+    cv::Point p2( src.cols, (-src.cols * hom(2,0) - hom(2,2)) / hom(2,1) );
+    cv::line( dst, p1, p2, CV_RGB( 0, 255, 0 ) );
+
     // show output
     cv::imshow( "projection", dst );
     cv::waitKey(0);
