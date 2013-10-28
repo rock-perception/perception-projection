@@ -23,10 +23,36 @@ void Homography::addImage( cv::Mat image, const::Eigen::Isometry3f& cam2plane, c
     Eigen::Matrix3f H = calcHomography( cam2plane, vcam2plane ); 
     Eigen::Matrix3f hom = camMat * H * vcamMat.inverse();
 
-    // apply perspective Transform
-    cv::Mat hom_cv( 3, 3, CV_32FC1 );
-    eigen2cv( hom, hom_cv );
-    cv::warpPerspective( image, vcam, hom_cv, vcam.size(), cv::WARP_INVERSE_MAP | cv::INTER_LINEAR ); 
+    cv::Rect bounds( cv::Point(), image.size() );
+    for(int i=0; i<vcam.rows; i++)
+    {
+	for(int j=0; j<vcam.cols; j++) 
+	{
+	    // apply homography
+	    Eigen::Vector3f p = hom * Eigen::Vector3f(j,i,1.0f);
+
+	    // only use the coordinates on the positive z side, 
+	    // to prevent mirror images from the rear of the camera
+	    if( p.z() > 0 )
+	    {
+		// see of screen coordinate is within bounds
+		cv::Point pt( p.x() / p.z(), p.y() / p.z() );
+		if( bounds.contains( pt ) )
+		{
+		    cv::Vec3b &s = image.at<cv::Vec3b>( pt.y, pt.x );
+		    cv::Vec4b &t = vcam.at<cv::Vec4b>( i, j );
+		    
+		    // blend the two pixels using the alpha channel
+		    // as an indicator for how many values have already
+		    // been stored there
+		    t[0] = (s[0] + t[0] * t[3]) / (t[3] + 1);
+		    t[1] = (s[1] + t[1] * t[3]) / (t[3] + 1);
+		    t[2] = (s[2] + t[2] * t[3]) / (t[3] + 1);
+		    t[3] += 1;
+		}
+	    }
+	}
+    }
 }
 
 Eigen::Matrix3f Homography::calcHomography( const Eigen::Matrix3f &R, const Eigen::Vector3f& t, const Eigen::Vector3f& n, float d ) const

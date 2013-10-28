@@ -107,6 +107,8 @@ BOOST_AUTO_TEST_CASE( homography )
     Homography hom;
     hom.init( 500, 500, 200, vcam2plane ); 
 
+    // first image
+    {
     cv::Mat img = cv::imread( "test/image1.png" );
     Eigen::Isometry3f cam2plane = 
         Eigen::Isometry3f( Eigen::Translation3f( Eigen::Vector3f( 0, 0, -1 ) ) ) *
@@ -116,6 +118,20 @@ BOOST_AUTO_TEST_CASE( homography )
     Eigen::Matrix3f camMat = getCameraMatrix( 350, 350, img.cols / 2, img.rows / 2 );
 
     hom.addImage( img, cam2plane, camMat );
+    }
+
+    // second image
+    {
+    cv::Mat img = cv::imread( "test/image1.png" );
+    Eigen::Isometry3f cam2plane = 
+        Eigen::Isometry3f( Eigen::Translation3f( Eigen::Vector3f( 0, 0, -1 ) ) ) *
+        Eigen::AngleAxisf( -M_PI*0.05, Eigen::Vector3f::UnitZ() ) * 
+        Eigen::AngleAxisf( M_PI*0.435, Eigen::Vector3f::UnitX() ) * 
+        Eigen::AngleAxisf( M_PI, Eigen::Vector3f::UnitX() ) ;
+    Eigen::Matrix3f camMat = getCameraMatrix( 350, 350, img.cols / 2, img.rows / 2 );
+
+    hom.addImage( img, cam2plane, camMat );
+    }
 
     // show output
     cv::imshow( "projection", hom.getVirtualImage() );
