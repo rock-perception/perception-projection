@@ -25,6 +25,11 @@ public:
      */
     cv::Mat getVirtualImage();
 
+    /**
+     * @brief clear the virtual image
+     */
+    void clearVirtualImage();
+
     /** 
      * Initialize virtual camera 
      *

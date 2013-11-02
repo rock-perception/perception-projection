@@ -86,4 +86,8 @@ cv::Mat Homography::getVirtualImage()
     return vcam;
 }
 
+void Homography::clearVirtualImage()
+{
+    vcam = cv::Scalar::all( 0 );
+}
 
