@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <projection/Triangulation.hpp>
+#include <projection/StereoTriangulation.hpp>
 
 using namespace projection;
 
