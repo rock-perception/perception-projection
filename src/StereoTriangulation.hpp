@@ -61,8 +61,8 @@ struct StereoTriangulation
         
         Eigen::Quaterniond R(trans.rotation());
         Eigen::Matrix<double,3,3> A;
-        A << xl, vl, -R.inverse()*(xr+vr);
-        Eigen::Vector3d b = Eigen::Vector::Zeros();
+        A << xl, vl, -(R.inverse()*(xr+vr));
+        Eigen::Vector3d b = Eigen::Vector3d::Zero();
         Eigen::Vector3d param = A.colPivHouseholderQr().solve(b);
         
         Eigen::Vector3d v = param[0] * xl + param[1] * vl;
