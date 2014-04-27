@@ -43,7 +43,7 @@ struct StereoTriangulation
         Eigen::Matrix<double,3,3> A;
         A << xl, -(R.inverse()*xr), (xl.cross(R.inverse()*xr-T)-T);
         Eigen::Vector3d b;
-        b = R.inverse()*T;
+        b = -(R.inverse()*T);
         Eigen::Vector3d param = A.colPivHouseholderQr().solve(b);
 
         Eigen::Vector3d Vp = param[2]*(xl.cross(R.inverse()*xr-T)-T);
