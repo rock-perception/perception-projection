@@ -64,16 +64,18 @@ void Model::loadFromFile( std::string filename )
     fclose(f);
 }
 
-Eigen::Vector2d Model::world2cam( const Eigen::Vector3d& point3D ) const
+bool Model::world2cam( const Eigen::Vector3d& point3D, Eigen::Vector2d &point2D ) const
 {
     double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
     double theta       = atan(point3D[2]/norm);
+
+    if( theta < min_angle || theta > max_angle )
+        return false;
+
     double t, t_i;
     double rho, x, y;
     double invnorm;
     size_t i;
-
-    Eigen::Vector2d point2D;
 
     if (norm != 0) 
     {
@@ -100,10 +102,10 @@ Eigen::Vector2d Model::world2cam( const Eigen::Vector3d& point3D ) const
         point2D[1] = yc;
     }
 
-    return point2D;
+    return true;
 }
 
-Eigen::Vector3d Model::cam2world( const Eigen::Vector2d& point2D ) const
+bool Model::cam2world( const Eigen::Vector2d& point2D, Eigen::Vector3d &point3D ) const
 {
     double invdet  = 1/(c-d*e); // 1/det(A), where A = [c,d;e,1] as in the Matlab file
 
@@ -121,15 +123,24 @@ Eigen::Vector3d Model::cam2world( const Eigen::Vector2d& point2D ) const
         zp  += r_i*pol[i];
     }
 
+    double theta = atan( r / zp );
+    if( theta < min_angle || theta > max_angle )
+        return false;
+
     //normalize to unit norm
     double invnorm = 1/sqrt( xp*xp + yp*yp + zp*zp );
 
-    Eigen::Vector3d point3D;
     point3D[0] = invnorm*xp;
     point3D[1] = invnorm*yp; 
     point3D[2] = invnorm*zp;
 
-    return point3D;
+    return true;
+}
+
+void Model::setAngleRange( float min, float max )
+{
+    min_angle = min;
+    max_angle = max;
 }
 
 size_t Model::getWidth() const
@@ -177,13 +188,16 @@ void EquirectangularProjection::init( size_t width, const Model &model )
             float yAng = y * M_PI / height;
 
             Eigen::Vector3d p = 
-                Eigen::AngleAxisd( xAng, Eigen::Vector3d::UnitX() )
-                * Eigen::AngleAxisd( yAng, Eigen::Vector3d::UnitZ() )
-                * Eigen::Vector3d::UnitX();
+                Eigen::AngleAxisd( xAng, Eigen::Vector3d::UnitZ() )
+                * Eigen::AngleAxisd( yAng, Eigen::Vector3d::UnitY() )
+                * Eigen::Vector3d::UnitZ();
 
-            Eigen::Vector2d c = model.world2cam( p );
-            mapx.at<float>( y, x ) = c.x();
-            mapy.at<float>( y, x ) = c.y();
+            Eigen::Vector2d c;
+            if( model.world2cam( p, c ) )
+            {
+                mapx.at<float>( y, x ) = c.y();
+                mapy.at<float>( y, x ) = c.x();
+            }
         }
     }
 }

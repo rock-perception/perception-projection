@@ -9,9 +9,10 @@ BOOST_AUTO_TEST_CASE( omnicam )
     cv::Mat img = cv::imread( "test/omni.png" );
     projection::omnicam::Model model;
     model.loadFromFile( "test/omni_calibration.txt" );
+    model.setAngleRange( -43.0 / 180.0 * M_PI, 35 / 180.0 * M_PI );
 
     projection::omnicam::EquirectangularProjection ep;
-    ep.init( 600, model );
+    ep.init( 1200, model );
 
     ep.process( img );
 
