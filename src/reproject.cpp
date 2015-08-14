@@ -5,6 +5,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <iostream>
+
 using namespace std;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -39,7 +41,7 @@ int main( int argc, char* argv[] )
     po::notify(vm);    
 
     if (vm.count("help")) {
-        cout << desc << "\n";
+        std::cout << desc << "\n";
         return 1;
     }
 
@@ -59,7 +61,7 @@ int main( int argc, char* argv[] )
         cv::Mat img = cv::imread( input_path.string() );
         ep.process( img );
         cv::imwrite( (out_path / input_path.filename()).string(), ep.getView() );
-        cout << i << "\r" << flush;
+        std::cout << i << "\r" << flush;
     }
 
     return 0;
