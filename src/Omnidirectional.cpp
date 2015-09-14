@@ -202,4 +202,58 @@ void EquirectangularProjection::init( size_t width, const Model &model )
     }
 }
 
+void PlanarProjection::init( size_t width, size_t height, const Model &model )
+{
+    Projection::init( width, height );
+    this->model = model;
+    // init with 90 deg fov
+    setView(0, 0, M_PI / 2.0);
+}
 
+void PlanarProjection::setView( double azimuth, double elevation, double fov )
+{
+    Eigen::Quaterniond rot =  
+	Eigen::AngleAxisd( elevation, Eigen::Vector3d::UnitZ() )
+	* Eigen::AngleAxisd( azimuth, Eigen::Vector3d::UnitY() );
+
+    setView( rot, fov );
+}
+
+void PlanarProjection::setView( const PlanarViewConfiguration& conf )
+{
+    setView( conf.azimuth, conf.elevation, conf.fov );
+}
+
+void PlanarProjection::setView( Eigen::Quaterniond rot, double fov )
+{
+    // aspect = w / h
+    // diag**2 = w**2 + h**2
+    // w/h = aspect
+    // h**2 = w**2/aspect**2
+    // diag**2 = w**2 + w**2/aspect**2
+    // diag**2 = (1 + 1/aspect**2) * w**2 
+    // w**2 = diag**2 - (1+1/aspect**2)
+
+    double aspect = (double)size.width / (double)size.height;
+    double diag = asin( fov/2.0 ) * 2.0;
+    double width = sqrt( diag*diag - (1.0+1.0/(aspect*aspect)) );
+    double height = width / aspect;
+
+    for( int x = 0; x < size.width; ++x )
+    {
+        for( int y = 0; y < size.height; ++y )
+        {
+	    Eigen::Vector3d p( 
+                    width * (-1.0*x / size.width + 0.5), 
+                    1.0,  
+                    height * (-1.0*y / size.height + 0.5) );
+	    
+            Eigen::Vector2d c;
+            if( model.world2cam( rot * p, c ) )
+            {
+                mapx.at<float>( y, x ) = c.y();
+                mapy.at<float>( y, x ) = c.x();
+            }
+	}
+    }
+}

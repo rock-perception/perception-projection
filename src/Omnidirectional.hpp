@@ -86,6 +86,38 @@ public:
     void init( size_t width, const Model &model );
 };
 
+struct PlanarViewConfiguration
+{
+    /// azimuth of the virtual pan tilt unit in rad
+    double azimuth;
+    /// elevation of the virtual pan til unit in rad
+    double elevation;
+    /// diagonal field of view in rad 
+    double fov;
+};
+
+class PlanarProjection : public Projection
+{
+    Eigen::Quaterniond rot;
+    double f;
+    Model model;
+
+public:
+    void init( size_t width, size_t height, const Model &model );
+
+    /**
+    * @brief set the view of virtual planar projection
+    * @param azimuth of the virtual pan tilt unit in rad
+    * @param elevation of the virtual pan til unit in rad
+    * @param fov diagonal field of view in rad 
+    */
+    void setView( double azimuth, double elevation, double fov );
+
+    void setView( const PlanarViewConfiguration& conf );
+
+    void setView( Eigen::Quaterniond rot, double fov);
+};
+
 }
 }
 
