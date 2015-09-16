@@ -1,3 +1,6 @@
+#ifndef PROJECTION_OMNIDIRECTIONALCONFIG_HPP__
+#define PROJECTION_OMNIDIRECTIONALCONFIG_HPP__
+
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -58,3 +61,5 @@ struct PlanarViewConfiguration
 
 }
 }
+
+#endif
