@@ -153,6 +153,12 @@ size_t Model::getHeight() const
     return height;
 }
 
+bool Model::isValid() const
+{
+    // simply check if any configuration data has been set 
+    return !pol.empty();
+}
+
 void Projection::init( size_t width, size_t height )
 {
     // initialize helper mats to target size
@@ -174,6 +180,8 @@ cv::Mat Projection::getView()
 
 void EquirectangularProjection::init( size_t width, const Model &model )
 {
+    if( !model.isValid() )
+        throw std::runtime_error("Calibration model not initialised.");
 
     // equirectangular projections always have a 2:1 aspect ratio
     size_t height = width / 2;
@@ -213,8 +221,8 @@ void PlanarProjection::init( size_t width, size_t height, const Model &model )
 void PlanarProjection::setView( double azimuth, double elevation, double fov )
 {
     Eigen::Quaterniond rot =  
-	Eigen::AngleAxisd( elevation, Eigen::Vector3d::UnitZ() )
-	* Eigen::AngleAxisd( azimuth, Eigen::Vector3d::UnitY() );
+	Eigen::AngleAxisd( azimuth, Eigen::Vector3d::UnitZ() )
+	* Eigen::AngleAxisd( elevation, Eigen::Vector3d::UnitX() );
 
     setView( rot, fov );
 }
@@ -233,6 +241,9 @@ void PlanarProjection::setView( Eigen::Quaterniond rot, double fov )
     // diag**2 = w**2 + w**2/aspect**2
     // diag**2 = (1 + 1/aspect**2) * w**2 
     // w**2 = diag**2 - (1+1/aspect**2)
+
+    if( !model.isValid() )
+        throw std::runtime_error("Calibration model not initialised.");
 
     double aspect = (double)size.width / (double)size.height;
     double diag = asin( fov/2.0 ) * 2.0;

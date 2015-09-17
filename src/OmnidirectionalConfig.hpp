@@ -45,12 +45,20 @@ public:
      */
     void setAngleRange( float min, float max );
 
+    /**
+     * @brief return true if the configuration is valid
+     */
+    bool isValid() const;
+
     size_t getWidth() const;
     size_t getHeight() const;
 };
 
 struct PlanarViewConfiguration
 {
+    PlanarViewConfiguration()
+        : azimuth(0.0), elevation(0.0), fov(M_PI*0.5) {}
+
     /// azimuth of the virtual pan tilt unit in rad
     double azimuth;
     /// elevation of the virtual pan til unit in rad
