@@ -1,5 +1,7 @@
+rock_opencv_autodetect(OPENCVLIBNAME)
+
 rock_library(projection
-    DEPS_PKGCONFIG opencv eigen3
+    DEPS_PKGCONFIG ${OPENCVLIBNAME} eigen3
     SOURCES Homography.cpp Omnidirectional.cpp
     HEADERS Homography.hpp StereoTriangulation.hpp Omnidirectional.hpp OmnidirectionalConfig.hpp)
 
